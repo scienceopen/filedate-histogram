@@ -5,8 +5,9 @@ Plots histogram of dates of files in directory
 from pathlib import Path
 from datetime import datetime
 from pandas import Series
+from matplotlib.pyplot import show
 
-def filedate(path,ext):
+def filedates(path,ext):
     root = Path(p.path).expanduser()
     assert root.is_dir()
 
@@ -31,5 +32,6 @@ if __name__ == '__main__':
     dates = filedates(p.path, p.ext)
 
     # http://stackoverflow.com/questions/27365467/python-pandas-plot-histogram-of-dates
-    dates.groupby([D.dt.year, D.dt.month]).count().plot(kind="bar")
+    dates.groupby([dates.dt.year, dates.dt.month]).count().plot(kind="bar")
 
+    show()
