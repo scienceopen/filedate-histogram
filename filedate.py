@@ -19,24 +19,44 @@ except ImportError:
     pandas = show = None
 
 GIT = shutil.which("git")
+use_git = GIT is not None
 
 
-def filedates(path: Path, ext: str, ftype: str) -> typing.List[datetime]:
+def filedates(path: Path, ext: str, debug: bool = False) -> typing.Iterator[datetime]:
     root = Path(p.path).expanduser()
-    assert root.is_dir()
+    if not root.is_dir():
+        raise NotADirectoryError(root)
 
-    files = root.glob("*{}".format(p.ext))
+    use_header = True
+    use_filename = True
 
-    if ftype == "jekyll":
-        dates = [datetime.strptime(f.name[:10], "%Y-%m-%d") for f in files]
-    elif ftype == "hugo":
-        dates = [get_markdown_date(f) for f in files]
-    elif GIT is not None:
-        dates = [get_gitcommit_date(f) for f in files]
-    else:
-        dates = [datetime.utcfromtimestamp(f.stat().st_mtime) for f in files]
+    for file in root.glob("*{}".format(p.ext)):
+        if use_header:
+            date = get_markdown_date(file)
+            if debug:
+                print('header', file, date)
+            if date is not None:
+                yield date
+                continue
+        if use_filename:
+            try:
+                if debug:
+                    print('filename', file)
+                yield datetime.strptime(file.name[:10], "%Y-%m-%d")
+                continue
+            except ValueError:
+                pass
+        if use_git:
+            date = get_gitcommit_date(file)
+            if debug:
+                print('git', file, date)
+            if date is not None:
+                yield date
+                continue
 
-    return dates
+        if debug:
+            print('stat', file)
+        yield datetime.utcfromtimestamp(file.stat().st_mtime)
 
 
 def get_markdown_date(path: Path) -> datetime:
@@ -49,7 +69,7 @@ def get_markdown_date(path: Path) -> datetime:
         if "date" in meta:
             return datetime.strptime(meta["date"], "%Y-%m-%d")
 
-    return datetime.utcfromtimestamp(path.stat().st_mtime)
+    return None
 
 
 def get_gitcommit_date(path: Path) -> datetime:
@@ -58,9 +78,9 @@ def get_gitcommit_date(path: Path) -> datetime:
         return None
 
     cmd = [GIT, "-C", str(path.parent), "log", "-1", "--format=%cd", "--date=iso", path.name]
-    datestr = subprocess.check_output(cmd, universal_newlines=True)
+    datestr = subprocess.run(cmd, universal_newlines=True, stdout=subprocess.PIPE)
     try:
-        date = datetime.strptime(datestr[:10], "%Y-%m-%d")
+        date = datetime.strptime(datestr.stdout[:10], "%Y-%m-%d")
     except ValueError:
         date = None
 
@@ -72,11 +92,11 @@ if __name__ == "__main__":
 
     p = ArgumentParser()
     p.add_argument("path", help="path to filename to analyze")
-    p.add_argument("ftype", help="filetype e.g. [hugo, jekyll]", nargs="?")
     p.add_argument("-e", "--ext", help="file extension to analyze", default=".md")
+    p.add_argument("--debug", help="print method used to get date", action="store_true")
     p = p.parse_args()
 
-    dates = filedates(p.path, p.ext, p.ftype)
+    dates = filedates(p.path, p.ext, p.debug)
 
     if pandas is not None:
         # http://stackoverflow.com/questions/27365467/python-pandas-plot-histogram-of-dates

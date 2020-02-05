@@ -1,25 +1,18 @@
 # filedate-histogram
 
-[![Actions Status](https://github.com/scivision/filedate-histogram/workflows/ci/badge.svg)](https://github.com/scivision/filedate-histogram/actions)
+![ci](https://github.com/scivision/filedate-histogram/workflows/ci/badge.svg)
 
 Plot histogram of dates of files in directory
 
 Just run in a directory to see a histogram of file modified times.
-If time method is not specified, use Git commit time if Git is present,
-else fallback to file modified time.
-
-## Hugo
-
-Hugo uses header metadata to determine webpage date.
 
 ```sh
-python filedate.py ~/hugosite/content/posts hugo
+python filedate.py ~/hugosite/content/posts
 ```
 
-## Jekyll
+The algorithm determines date of files in a directory, assuming all are the same type, by examining:
 
-Jekyll gets webpage dates from the filename of the Markdown files.
-
-```sh
-python filedate.py ~/jekyllsite/_posts/ jekyll
-```
+1. header metadata
+2. filename
+3. Git modified time
+4. file modification time.
