@@ -2,13 +2,13 @@
 import pytest
 from pathlib import Path
 from datetime import datetime
-import filedate as fd
+import file_date as fd
 
 R = Path(__file__)
 
 
 def test_header_dates():
-    file = R.parent / 'tests/hugo.md'
+    file = R.parent / "tests/hugo.md"
     date = fd.get_markdown_date(file)
     assert date == datetime(2012, 1, 23)
 
