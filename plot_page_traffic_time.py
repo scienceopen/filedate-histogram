@@ -1,9 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
 """
 plots traffic from Statcounter .csv download
 
 https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
 """
+
 import pandas
 from matplotlib.pyplot import show
 from pathlib import Path

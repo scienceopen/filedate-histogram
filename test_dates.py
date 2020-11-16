@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-import pytest
 from pathlib import Path
 from datetime import datetime
 import file_date as fd
@@ -16,7 +14,3 @@ def test_header_dates():
 def test_gitdates():
     date = fd.get_gitcommit_date(R)
     assert isinstance(date, datetime)
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])
